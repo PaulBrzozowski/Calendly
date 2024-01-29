@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+    <title>Calendly</title>
+    <style>
+       body {
+    background-color: lightblue; /* Light blue background for the entire page */
+    margin: 0;
+    padding: 0;
+    font-family: 'Nunito', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Full viewport height */
+}
+.calendar-title {
+        text-align: center;
+        font-family: 'Nunito', sans-serif;
+        color: #333; /* Adjust the color as needed */
+        margin-bottom: 20px; /* Space between the title and the calendar */
+    }
+
+.calendar {
+    font-family: 'Nunito', sans-serif;
+    width: 90%; /* 70% of the page width */
+    height: 70%; /* 70% of the page height */
+    max-width: 1500px; /* Maximum width */
+    max-height: 1000px; /* Maximum height */
+    margin: auto;
+    
+    background-color: white; /* White background for the calendar */
+    border-radius: 10px; /* Rounded corners */
+    box-shadow: 0 0 10px rgba(0,0,0,0.1); /* Optional: Adds a subtle shadow */
+    overflow: hidden; /* Ensures the border-radius clips the content */
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+}
+
+.calendar-header {
+    font-family: 'Nunito', sans-serif;
+    flex: 0 0 auto;
+    display: flex;
+    padding: 10 20px;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f9f9f9; /* Slightly different background for the header */
+    color: #333; /* Dark text color for contrast */
+    padding: 10px;
+    cursor: pointer;
+}
+
+.calendar-days {
+    font-family: 'Nunito', sans-serif;
+    flex: 0 0 auto;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    background-color: #eee; /* Slightly different background for days */
+    color: #333; /* Dark text color */
+    padding: 10px 0;
+    text-align: center;
+}
+.event {
+    font-family: 'Nunito', sans-serif;
+            cursor: pointer;
+            margin: 2px;
+            padding: 2px;
+            border-radius: 10px;
+            text-align: center;
+            /* Add more styles as needed */
+        }
+.calendar-dates {
+    font-family: 'Nunito', sans-serif;
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    overflow-y: auto; /* Allow scrolling if content overflows */
+}
+
+.calendar-dates div {
+    padding: 15px 0; /* Increase padding for better visibility */
+    cursor: pointer;
+}
+
+/* Responsive adjustments */
+@media (max-width: 800px) {
+    .calendar {
+        width: 95%; /* Increase width for smaller screens */
+        height: 95%; /* Increase height for smaller screens */
+    }
+}
+
+.modal {
+        display: none; /* Hidden by default */
+        position: fixed; /* Stay in place */
+        z-index: 1; /* Sit on top */
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+        background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    }
+
+.modal-content {
+        background-color: #fefefe;
+        margin: 15% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+        max-width: 500px;
+        border-radius: 10px; /* Rounded corners */
+        font-family: 'Nunito', sans-serif; /* Nunito font */
+        text-align: center; /* Center align the content */
+    }
+
+    .modal-content h2,
+    .modal-content p,
+    .modal-content form {
+        margin: 10px 0; /* Spacing around elements */
+    }
+
+    .modal-content input[type="text"],
+    .modal-content input[type="datetime-local"],
+    .modal-content textarea {
+        width: 100%; /* Full width inputs */
+        padding: 8px;
+        margin: 5px 0 20px 0; /* Spacing around inputs */
+        display: inline-block;
+        border: 1px solid #ccc;
+        border-radius: 4px; /* Slightly rounded corners for inputs */
+        box-sizing: border-box; /* Box sizing */
+    }
+
+    .modal-content button {
+        width: 100%;
+        padding: 10px;
+        background-color: #4CAF50; /* Example button color */
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .modal-content button:hover {
+        background-color: #45a049; /* Darker shade for hover */
+    }
+
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+    .close:hover,
+    .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+    }
+    .modal-button-group {
+        display: flex;
+        justify-content: space-around; /* Distribute buttons evenly */
+        padding: 10px 0; /* Spacing above and below the button group */
+    }
+
+    .modal-button-group button {
+        flex: 1; /* Each button takes equal width */
+        margin: 0 5px; /* Spacing between buttons */
+        padding: 5px 10px; /* Smaller padding */
+        font-size: 0.8em; /* Smaller font size */
+        /* Additional button styling as needed */
+    }
+    
+    </style>
+</head>
+<body>
+    <div class="content-container" style="width: 1500px;height: 1000px;">
+        <h1 class="calendar-title"style="color: white; font-size:64px;">Calendly</h1>
+            <div class="calendar">
+                <div class="calendar-header">
+                    <span id="prev" onclick="moveDate('prev')">&#10094;</span>
+                    <h2 id="month"></h2>
+                    <span id="next" onclick="moveDate('next')">&#10095;</span>
+                </div>
+                <div class="calendar-days">
+                    <div>Sun</div>
+                    <div>Mon</div>
+                    <div>Tue</div>
+                    <div>Wed</div>
+                    <div>Thu</div>
+                    <div>Fri</div>
+                    <div>Sat</div>
+                </div>
+                <div class="calendar-dates" id="calendar-dates">
+                    <!-- Calendar dates will be added here dynamically -->
+                </div>
+            </div>
+            <div id="eventModal" class="modal">
+                <div class="modal-content">
+                    <span class="close" onclick="closeModal()">&times;</span>
+                    <h2>Create Event for <span id="eventDate"></span></h2>
+                    <form action="/add-event" method="POST">
+                        <input type="hidden" name="date" id="hiddenDateField">
+            
+                        <label for="title">Event Title:</label>
+                        <input type="text" id="title" name="title" required>
+            
+                        <label for="start_time">Start Time:</label>
+                        <input type="datetime-local" id="start_time" name="start_time" required>
+            
+                        <label for="end_time">End Time:</label>
+                        <input type="datetime-local" id="end_time" name="end_time" required>
+            
+                        <label for="description">Description:</label>
+                        <textarea id="description" name="description" required></textarea>
+            
+                        <label for="tag">Tag:</label>
+                        <input type="text" id="tag" name="tag">
+            
+                        <button type="submit">Add Event</button>
+                    </form>
+                </div>
+            </div>
+            <!-- Event Details Modal -->
+            <div id="eventDetailsModal" class="modal">
+                <div class="modal-content">
+                    <span class="close" onclick="closeEventDetailsModal()">&times;</span>
+                    <h2>Edit Event</h2>
+            
+                    <!-- Editable fields -->
+                    <input type="text" id="editTitle" style="display: none;">
+                    <p id="eventDetailsTitle"></p>
+            
+                    <input type="datetime-local" id="editStartTime" style="display: none;">
+                    <p id="eventDetailsStartTime"></p>
+            
+                    <input type="datetime-local" id="editEndTime" style="display: none;">
+                    <p id="eventDetailsEndTime"></p>
+            
+                    <textarea id="editDescription" style="display: none;"></textarea>
+                    <p id="eventDetailsDescription"></p>
+            
+                    <input type="text" id="editTag" style="display: none;">
+                    <p id="eventDetailsTag"></p>
+            
+                    <!-- Buttons -->
+                    <div class="modal-button-group">
+                        <button onclick="enableEditMode()" style="background-color: blue; color: white;">Edit</button>
+                        <button onclick="saveEventChanges()" style="background-color: green; color: white;">Save</button>
+                        <button onclick="deleteEvent()" style="background-color: red; color: white;">Delete Event</button>
+                    </div>
+                </div>
+            </div>
+        </div>   
+            
+            <div id="eventsData" style="display: none;" data-events="<%- JSON.stringify(events || []).replace(/"/g, '&quot;') %>"></div>
+
+    <script>
+    let eventsData = document.getElementById('eventsData').getAttribute('data-events');
+    let events = JSON.parse(eventsData);
+
+    let dt = new Date();
+
+    function formatDate(date) {
+    return date.getFullYear() + '-' + 
+           ('0' + (date.getMonth() + 1)).slice(-2) + '-' + 
+           ('0' + date.getDate()).slice(-2);
+}
+
+    function getColorForTag(tag) {
+            switch (tag) {
+                case 'Dinner': return 'purple';
+                case 'Work': return 'green';
+                case 'Recreation' : return 'yellow';
+                // Add more cases for different tags
+                default: return 'grey'; // Default color
+            }
+        }
+    function renderDate() {
+        dt.setDate(1);
+        const monthDays = document.getElementById("calendar-dates");
+        const lastDay = new Date(dt.getFullYear(), dt.getMonth() + 1, 0).getDate();
+        const firstDayIndex = dt.getDay();
+
+        const months = [
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        ];
+
+        document.getElementById("month").innerText = months[dt.getMonth()] + " " + dt.getFullYear();
+
+        let days = "";
+
+        for (let x = firstDayIndex; x > 0; x--) {
+            days += `<div class="prev-date">${new Date(dt.getFullYear(), dt.getMonth(), -x + 1).getDate()}</div>`;
+        }
+
+        for (let i = 1; i <= lastDay; i++) {
+                let currentDay = new Date(dt.getFullYear(), dt.getMonth(), i);
+                let formattedDay = formatDate(currentDay);
+
+                let dayEvents = events.filter(event => formatDate(new Date(event.start_time)) === formattedDay);
+
+                let dayHtml = `<div class="date" onclick="redirectToEventCreation('${formattedDay}')">${i}`;
+
+                dayEvents.forEach(event => {
+                    let color = getColorForTag(event.tag);
+                    dayHtml += `<span class="event-tag" style="background-color: ${color};" onclick="event.stopPropagation(); viewEventDetails(event, '${event.id}')">${event.title}</span>`;
+                });
+
+                dayHtml += `</div>`;
+                days += dayHtml;
+            }
+
+
+            monthDays.innerHTML = days;
+            updateBackgroundColor();
+        }
+        function updateBackgroundColor() {
+            const month = dt.getMonth();
+            let color = '';
+
+            if (month >= 10 || month <= 0) { // Nov, Dec, Jan
+                color = 'lightblue';
+            } else if (month >= 1 && month <= 3) { // Feb, Mar, Apr
+                color = 'lightgreen';
+            } else if (month >= 4 && month <= 6) { // May, Jun, Jul
+                color = '#fff782';
+            } else if (month >= 7 && month <= 9) { // Aug, Sep, Oct
+                color = '#de8d6a';
+            }
+
+            document.body.style.backgroundColor = color;
+        }
+        function moveDate(direction) {
+            if (direction === 'prev') {
+                dt.setMonth(dt.getMonth() - 1);
+            } else if (direction === 'next') {
+                dt.setMonth(dt.getMonth() + 1);
+            }
+            renderDate();
+            updateBackgroundColor(); // Update the background color after changing the month
+
+        }
+        function redirectToEventCreation(date) {
+            document.getElementById('eventDate').innerText = date;
+            document.getElementById('hiddenDateField').value = date;
+            document.getElementById('eventModal').style.display = 'block';
+        }
+    
+        function viewEventDetails(e, eventId) {
+            e.stopPropagation(); // Prevent the calendar date click event
+
+            let event = events.find(event => event.id == eventId);
+            if (!event) return;
+
+            // Populate the modal with event details
+            document.getElementById('eventDetailsTitle').innerText = event.title;
+            document.getElementById('eventDetailsStartTime').innerText = new Date(event.start_time).toLocaleString();
+            document.getElementById('eventDetailsEndTime').innerText = new Date(event.end_time).toLocaleString();
+            document.getElementById('eventDetailsDescription').innerText = event.description;
+            document.getElementById('eventDetailsTag').innerText = event.tag;
+
+            // Display the modal
+            document.getElementById('eventDetailsModal').style.display = 'block';
+            currentEditingEventId = eventId;
+            disableEditMode(); // Ensure fields are not editable initially
+        }
+        function enableEditMode() {
+            // Make fields editable
+            document.getElementById('editTitle').style.display = 'block';
+            document.getElementById('editStartTime').style.display = 'block';
+            document.getElementById('editEndTime').style.display = 'block';
+            document.getElementById('editDescription').style.display = 'block';
+            document.getElementById('editTag').style.display = 'block';
+
+            // Hide static text
+            document.getElementById('eventDetailsTitle').style.display = 'none';
+            document.getElementById('eventDetailsStartTime').style.display = 'none';
+            document.getElementById('eventDetailsEndTime').style.display = 'none';
+            document.getElementById('eventDetailsDescription').style.display = 'none';
+            document.getElementById('eventDetailsTag').style.display = 'none';
+        }
+
+        function disableEditMode() {
+            // Hide editable fields
+            document.getElementById('editTitle').style.display = 'none';
+            document.getElementById('editStartTime').style.display = 'none';
+            document.getElementById('editEndTime').style.display = 'none';
+            document.getElementById('editDescription').style.display = 'none';
+            document.getElementById('editTag').style.display = 'none';
+
+            // Show static text
+            document.getElementById('eventDetailsTitle').style.display = 'block';
+            document.getElementById('eventDetailsStartTime').style.display = 'block';
+            document.getElementById('eventDetailsEndTime').style.display = 'block';
+            document.getElementById('eventDetailsDescription').style.display = 'block';
+            document.getElementById('eventDetailsTag').style.display = 'block';
+        }
+
+        function saveEventChanges() {
+            // Gather data from editable fields
+            let updatedData = {
+                title: document.getElementById('editTitle').value,
+                start_time: document.getElementById('editStartTime').value,
+                end_time: document.getElementById('editEndTime').value,
+                description: document.getElementById('editDescription').value,
+                tag: document.getElementById('editTag').value
+            };
+
+            // Send update request to the server
+            fetch('/update-event', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ eventId: currentEditingEventId, ...updatedData })
+            })
+            .then(response => {
+                if (response.ok) {
+                    window.location.reload(); // Reload to update the calendar
+                } else {
+                    alert('Error updating event');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+        function deleteEvent() {
+                if (!confirm('Are you sure you want to delete this event?')) return;
+
+                fetch('/delete-event', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ eventId: currentEditingEventId })
+                })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.reload(); // Reload to update the calendar
+                    } else {
+                        alert('Error deleting event');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            }
+        function closeModal() {
+        document.getElementById('eventModal').style.display = 'none';
+        document.getElementById('eventDetailsModal').style.display = 'none';
+    }
+
+    // Close modal when clicking outside of it
+    window.onclick = function(event) {
+        if (event.target.classList.contains('modal')) {
+            closeModal();
+        }
+    }
+    
+        renderDate();
+    </script>
+    
+</body>
+</html>
