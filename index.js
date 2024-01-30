@@ -39,16 +39,65 @@ app.get('/createevent', (req, res) => {
 });
 
 app.post('/add-event', (req, res) => {
-    const { title, start_time, end_time, description, tag } = req.body;
-    console.log(title, start_time, end_time, description, tag);
-    const query = 'INSERT INTO events (title, start_time, end_time, description, tag) VALUES (?, ?, ?, ?, ?)';
-    
-    db.query(query, [title, start_time, end_time, description, tag], (err, result) => {
-        if (err) throw err;
-        console.log('Event added');
-        res.redirect('/splash'); // Redirect back to the calendar page or to a success page
-    });
+   // Function to create daily recurring events
+   function createDailyEvents(title, start, end, description, tag, endDate) {
+    let currentDate = new Date(start);
+    const lastDate = new Date(endDate);
+
+    while (currentDate <= lastDate) {
+        createEvent(title, currentDate.toISOString(), end, description, tag);
+
+        // Increment the date by one day
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+}
+
+// Function to create weekly recurring events
+function createWeeklyEvents(title, start, end, description, tag, endDate) {
+    let currentDate = new Date(start);
+    const lastDate = new Date(endDate);
+
+    while (currentDate <= lastDate) {
+        createEvent(title, currentDate.toISOString(), end, description, tag);
+
+        // Increment the date by 7 days for weekly recurrence
+        currentDate.setDate(currentDate.getDate() + 7);
+    }
+}
+
+// Check if the event is recurring
+if (isRecurring === 'on') {
+    if (recurrencePattern === 'daily') {
+        createDailyEvents(title, start_time, end_time, description, tag, endDate);
+    } else if (recurrencePattern === 'weekly') {
+        createWeeklyEvents(title, start_time, end_time, description, tag, endDate);
+    }
+} else {
+    // Create a single event
+    createEvent(title, start_time, end_time, description, tag);
+}
+
+res.redirect('/splash'); // Redirect back to the calendar page
 });
+function toMySQLDateTime(isoString) {
+    const date = new Date(isoString);
+    return date.toISOString().slice(0, 19).replace('T', ' ');
+}
+
+function createEvent(title, start, end, description, tag) {
+    const formattedStart = toMySQLDateTime(start);
+    const formattedEnd = toMySQLDateTime(end);
+
+    // Now use formattedStart and formattedEnd in your SQL query
+    const query = 'INSERT INTO events (title, start_time, end_time, description, tag) VALUES (?, ?, ?, ?, ?)';
+    db.query(query, [title, formattedStart, formattedEnd, description, tag], (err, result) => {
+        if (err) {
+            console.error('Error adding event:', err);
+            return;
+        }
+        console.log('Event added');
+    });
+}
 app.post('/delete-event', (req, res) => {
     const { eventId } = req.body; // Assuming you're sending the ID of the event to delete
 
