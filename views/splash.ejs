@@ -220,7 +220,17 @@
             
                         <label for="tag">Tag:</label>
                         <input type="text" id="tag" name="tag">
-            
+                        <!-- Inside your event creation modal form -->
+                        <label for="isRecurring">Recurring Event:</label>
+                        <input type="checkbox" id="isRecurring" name="isRecurring">
+
+                        <div id="recurrenceOptions" style="display: none;">
+                            <label for="recurrencePattern">Recurrence Pattern:</label>
+                            <select id="recurrencePattern" name="recurrencePattern">
+                                <option value="daily">Daily</option>
+                                <option value="weekly">Weekly</option>
+                            </select>
+                        </div>    
                         <button type="submit">Add Event</button>
                     </form>
                 </div>
@@ -262,7 +272,10 @@
     <script>
     let eventsData = document.getElementById('eventsData').getAttribute('data-events');
     let events = JSON.parse(eventsData);
-
+     // JavaScript to show/hide recurrence options
+     document.getElementById('isRecurring').addEventListener('change', function() {
+        document.getElementById('recurrenceOptions').style.display = this.checked ? 'block' : 'none';
+    });    
     let dt = new Date();
 
     function formatDate(date) {

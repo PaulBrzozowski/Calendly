@@ -66,4 +66,4 @@ __pycache__/
 .ipynb_checkpoints
 
 # environment variables
-.env
+.env    
