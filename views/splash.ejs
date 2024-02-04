@@ -20,7 +20,12 @@
         color: #333; /* Adjust the color as needed */
         margin-bottom: 20px; /* Space between the title and the calendar */
     }
-
+#prev, #next {
+    cursor: pointer; /* Changes the cursor to indicate clickable items */
+    padding: 10px; /* Increases the clickable area around the arrows */
+    font-size: 24px; /* Adjusts the size of the arrows, if they're text-based */
+    /* Add any additional styling here */
+}
 .calendar {
     font-family: 'Nunito', sans-serif;
     width: 90%; /* 70% of the page width */
@@ -70,6 +75,15 @@
             text-align: center;
             /* Add more styles as needed */
         }
+.event-tag {
+    padding: 4px 8px; /* Adjust padding to your preference */
+    border-radius: 5px; /* Rounded corners for the tag */
+    color: white; /* Text color */
+    display: inline-block; /* Makes the element behave like a tag */
+    margin: 2px; /* Spacing around tags */
+    font-size: 0.8em; /* Smaller font size for tags */
+    cursor: pointer; /* Change cursor on hover */
+}
 .calendar-dates {
     font-family: 'Nunito', sans-serif;
     flex: 1;
@@ -174,6 +188,7 @@
         font-size: 0.8em; /* Smaller font size */
         /* Additional button styling as needed */
     }
+
     
     </style>
 </head>
@@ -259,7 +274,7 @@
             
                     <input type="text" id="editTag" style="display: none;">
                     <p id="eventDetailsTag"></p>
-            
+                    
                     <!-- Buttons -->
                     <div class="modal-button-group">
                         <button onclick="enableEditMode()" style="background-color: blue; color: white;">Edit</button>
@@ -278,7 +293,10 @@
      // JavaScript to show/hide recurrence options
      document.getElementById('isRecurring').addEventListener('change', function() {
         document.getElementById('recurrenceOptions').style.display = this.checked ? 'block' : 'none';
-    });    
+    });  
+    function closeEventDetailsModal() {
+    document.getElementById('eventDetailsModal').style.display = 'none';
+}  
     let dt = new Date();
 
     function formatDate(date) {
@@ -336,6 +354,7 @@
             monthDays.innerHTML = days;
             updateBackgroundColor();
         }
+        
         function updateBackgroundColor() {
             const month = dt.getMonth();
             let color = '';

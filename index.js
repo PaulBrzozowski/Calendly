@@ -38,46 +38,53 @@ app.get('/createevent', (req, res) => {
     res.render('createevent');
 });
 
+
 app.post('/add-event', (req, res) => {
-   // Function to create daily recurring events
-   function createDailyEvents(title, start, end, description, tag, endDate) {
-    let currentDate = new Date(start);
-    const lastDate = new Date(endDate);
+    const { title, start_time, end_time, description, tag, recurrencePattern, endDate } = req.body;
+    const isRecurring = req.body.isRecurring === 'on';
 
-    while (currentDate <= lastDate) {
-        createEvent(title, currentDate.toISOString(), end, description, tag);
-
-        // Increment the date by one day
-        currentDate.setDate(currentDate.getDate() + 1);
+    // Function to format ISO string to MySQL datetime format
+    function toMySQLDateTime(isoString) {
+        const date = new Date(isoString);
+        return date.toISOString().slice(0, 19).replace('T', ' ');
     }
-}
 
-// Function to create weekly recurring events
-function createWeeklyEvents(title, start, end, description, tag, endDate) {
-    let currentDate = new Date(start);
-    const lastDate = new Date(endDate);
 
-    while (currentDate <= lastDate) {
-        createEvent(title, currentDate.toISOString(), end, description, tag);
-
-        // Increment the date by 7 days for weekly recurrence
-        currentDate.setDate(currentDate.getDate() + 7);
+    function createDailyEvents(title, start, end, description, tag, endDate) {
+        let currentDate = new Date(start);
+        const lastDate = new Date(endDate);
+        lastDate.setDate(lastDate.getDate() + 1); // Adjust to include the end date
+    
+        while (currentDate < lastDate) { // Use < instead of <= since we adjusted lastDate
+            createEvent(title, currentDate.toISOString(), end, description, tag);
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
     }
-}
-
-// Check if the event is recurring
-if (isRecurring === 'on') {
-    if (recurrencePattern === 'daily') {
-        createDailyEvents(title, start_time, end_time, description, tag, endDate);
-    } else if (recurrencePattern === 'weekly') {
-        createWeeklyEvents(title, start_time, end_time, description, tag, endDate);
+    
+    function createWeeklyEvents(title, start, end, description, tag, endDate) {
+        let currentDate = new Date(start);
+        const lastDate = new Date(endDate);
+        lastDate.setDate(lastDate.getDate() + 1); // Adjust to include the end date
+    
+        while (currentDate < lastDate) { // Use < instead of <= since we adjusted lastDate
+            createEvent(title, currentDate.toISOString(), end, description, tag);
+            currentDate.setDate(currentDate.getDate() + 7);
+        }
     }
-} else {
-    // Create a single event
-    createEvent(title, start_time, end_time, description, tag);
-}
 
-res.redirect('/splash'); // Redirect back to the calendar page
+    // Check if the event is recurring and create events accordingly
+    if (isRecurring) {
+        if (recurrencePattern === 'daily') {
+            createDailyEvents(title, start_time, end_time, description, tag, endDate);
+        } else if (recurrencePattern === 'weekly') {
+            createWeeklyEvents(title, start_time, end_time, description, tag, endDate);
+        }
+    } else {
+        // Create a single event
+        createEvent(title, start_time, end_time, description, tag);
+    }
+
+    res.redirect('/splash'); // Redirect back to the calendar page
 });
 function toMySQLDateTime(isoString) {
     const date = new Date(isoString);
